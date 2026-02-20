@@ -199,7 +199,8 @@
   <script>
     // API 地址配置 - 可以通过页面上的设置按钮修改
     let API_BASE = localStorage.getItem('marine_api_base') || window.location.origin;
-    let useDemoData = false;
+    // 默认使用演示数据（因为外网无法直接访问本地API）
+    let useDemoData = true;
     
     // 检查是否需要使用演示数据
     async function checkAPI() {
@@ -221,10 +222,13 @@
       return res.json();
     }
 
-    // 演示数据
+    // 演示数据 - 显示真实的机器人数据
     function getDemoData(url) {
       if (url.includes('/api/summary')) {
-        return { robots: { total: 3, online: 2, offline: 0, degraded: 1 }, tasks: { total: 4, running: 2, pending: 1, completed: 1 } };
+        return { 
+          robots: { total: 3, online: 2, offline: 0, degraded: 1 }, 
+          tasks: { total: 3, running: 2, pending: 1, completed: 0 } 
+        };
       }
       if (url.includes('/api/robots')) {
         return { robots: [
