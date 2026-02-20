@@ -206,7 +206,7 @@
     // API 地址配置 - 可以通过页面上的设置按钮修改
     let API_BASE = localStorage.getItem('marine_api_base') || window.location.origin;
     // 默认使用演示数据（因为外网无法直接访问本地API）
-    let dataMode = localStorage.getItem("marine_data_mode") || "demo";
+    let dataMode = localStorage.getItem("marine_data_mode") || "json";
     let JSON_DATA_URL = "data/robots.json";
     
     // 检查是否需要使用演示数据

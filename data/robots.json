@@ -7,7 +7,7 @@
       "saturation": 10,
       "current_task": "机器人管理网站搭建",
       "current_task_source": "顾源源 通过 飞书对话 布置",
-      "last_seen_at": "2026-02-20T21:30:00Z",
+      "last_seen_at": "2026-02-20T21:35:00Z",
       "health": { "status": "ok" }
     },
     {
@@ -17,7 +17,7 @@
       "saturation": 16,
       "current_task": "优化数据库查询性能",
       "current_task_source": "林佳维 通过 飞书对话 布置",
-      "last_seen_at": "2026-02-20T21:30:00Z",
+      "last_seen_at": "2026-02-20T21:35:00Z",
       "health": { "status": "ok" }
     },
     {
@@ -27,9 +27,9 @@
       "saturation": 50,
       "current_task": "编写测试用例",
       "current_task_source": "系统 通过 cron 定时任务 布置",
-      "last_seen_at": "2026-02-20T21:30:00Z",
+      "last_seen_at": "2026-02-20T21:35:00Z",
       "health": { "status": "degraded" }
     }
   ],
-  "updated_at": "2026-02-20T21:30:00Z"
+  "updated_at": "2026-02-20T21:35:00Z"
 }
