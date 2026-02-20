@@ -233,7 +233,7 @@
     // 演示数据 - 显示真实的机器人数据 + ETA
     const ROBOTS = [
       { robot_id: '大周', status: 'RUNNING', current_task: '机器人管理网站搭建', current_task_source: '顾源源 通过 飞书对话 布置', current_task_started: '2026-02-20T10:00:00Z', estimate_min: 60, saturation: 10, queued_tasks: ['开发用户反馈功能'] },
-      { robot_id: '墨墨', status: 'RUNNING', current_task: '优化数据库查询性能', current_task_source: '林佳维 通过 飞书对话 布置', current_task_started: '2026-02-20T10:30:00Z', estimate_min: 45, saturation: 16, queued_tasks: [] },
+      { robot_id: '默默', status: 'RUNNING', current_task: '优化数据库查询性能', current_task_source: '林佳维 通过 飞书对话 布置', current_task_started: '2026-02-20T10:30:00Z', estimate_min: 45, saturation: 16, queued_tasks: [] },
       { robot_id: 'marine-g', status: 'IDLE', current_task: null, current_task_source: null, current_task_started: null, estimate_min: 0, saturation: 0, queued_tasks: ['编写测试用例', '配置CI/CD'] }
     ];
     
@@ -250,7 +250,7 @@
       if (url.includes('/api/tasks') && !url.includes('pending')) {
         return { tasks: [
           { task_id: '1', description: '机器人管理网站搭建', source_text: '顾源源 通过 飞书对话 布置', status: 'RUNNING', assigned_robot: '大周', started_at: '2026-02-20T10:00:00Z', estimate_min: 60 },
-          { task_id: '2', description: '优化数据库查询性能', source_text: '林佳维 通过 飞书对话 布置', status: 'RUNNING', assigned_robot: '墨墨', started_at: '2026-02-20T10:30:00Z', estimate_min: 45 }
+          { task_id: '2', description: '优化数据库查询性能', source_text: '林佳维 通过 飞书对话 布置', status: 'RUNNING', assigned_robot: '默默', started_at: '2026-02-20T10:30:00Z', estimate_min: 45 }
         ], total: 2 };
       }
       if (url.includes('/api/tasks/pending')) {
@@ -327,7 +327,7 @@
               <select class="form-select form-select-sm" id="assign-robot-${t.task_id}">
                 <option value="">选择机器人</option>
                 <option value="大周">大周 ${ROBOTS[0].status === 'IDLE' ? '(空闲)' : `(运行中, ETA ${calcETA(ROBOTS[0].current_task_started, ROBOTS[0].estimate_min)})`}</option>
-                <option value="墨墨">墨墨 ${ROBOTS[1].status === 'IDLE' ? '(空闲)' : `(运行中, ETA ${calcETA(ROBOTS[1].current_task_started, ROBOTS[1].estimate_min)})`}</option>
+                <option value="默默">默默 ${ROBOTS[1].status === 'IDLE' ? '(空闲)' : `(运行中, ETA ${calcETA(ROBOTS[1].current_task_started, ROBOTS[1].estimate_min)})`}</option>
                 <option value="marine-g">marine-g ${ROBOTS[2].status === 'IDLE' ? '(空闲)' : ''}</option>
               </select>
             </td>
