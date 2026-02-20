@@ -33,7 +33,12 @@
   <nav class="navbar navbar-dark bg-dark border-bottom border-secondary">
     <div class="container-fluid">
       <span class="navbar-brand mb-0 h1"><i class="bi bi-robot"></i> Marine 机群运维中心</span>
-      <span class="text-muted">v2.0 - 任务中心</span>
+      <div>
+        <span class="badge bg-secondary me-2" id="api-status">演示模式</span>
+        <button class="btn btn-sm btn-outline-light" onclick="showSettings()">
+          <i class="bi bi-gear"></i> 设置
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -192,12 +197,54 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const API_BASE = '';
-    let robotModal = null;
+    // API 地址配置 - 可以通过页面上的设置按钮修改
+    let API_BASE = localStorage.getItem('marine_api_base') || window.location.origin;
+    let useDemoData = false;
+    
+    // 检查是否需要使用演示数据
+    async function checkAPI() {
+      try {
+        const res = await fetch(API_BASE + '/api/summary', { signal: AbortSignal.timeout(3000) });
+        if (!res.ok) throw new Error('API not available');
+        useDemoData = false;
+        return true;
+      } catch (e) {
+        console.log('API 不可用，使用演示数据');
+        useDemoData = true;
+        return false;
+      }
+    }
 
     async function fetchJSON(url) {
+      if (useDemoData) return getDemoData(url);
       const res = await fetch(url);
       return res.json();
+    }
+
+    // 演示数据
+    function getDemoData(url) {
+      if (url.includes('/api/summary')) {
+        return { robots: { total: 3, online: 2, offline: 0, degraded: 1 }, tasks: { total: 4, running: 2, pending: 1, completed: 1 } };
+      }
+      if (url.includes('/api/robots')) {
+        return { robots: [
+          { robot_id: 'marine-k', status: 'Online', current_task: '机器人管理网站搭建', current_task_source: '顾源源 通过 飞书对话 布置', saturation: 10 },
+          { robot_id: 'marine-w', status: 'Online', current_task: '优化数据库查询性能', current_task_source: '林佳维 通过 飞书对话 布置', saturation: 16 },
+          { robot_id: 'marine-g', status: 'Degraded', current_task: '编写测试用例', current_task_source: '系统 通过 cron 定时任务 布置', saturation: 50 }
+        ]};
+      }
+      if (url.includes('/api/tasks') && !url.includes('pending')) {
+        return { tasks: [
+          { task_id: '1', description: '机器人管理网站搭建', source_text: '顾源源 通过 飞书对话 布置', status: 'running', assigned_robot: 'marine-k' },
+          { task_id: '2', description: '优化数据库查询性能', source_text: '林佳维 通过 飞书对话 布置', status: 'running', assigned_robot: 'marine-w' }
+        ], total: 2 };
+      }
+      if (url.includes('/api/tasks/pending')) {
+        return { tasks: [
+          { task_id: '3', description: '开发天气查询功能', source_text: '顾源源 通过 飞书对话 布置', priority: 'high', created_at: new Date().toISOString() }
+        ], total: 1 };
+      }
+      return { tasks: [], robots: [] };
     }
 
     async function loadData() {
@@ -296,8 +343,17 @@
       loadData();
     }
 
+    function showSettings() {
+      const apiInput = prompt('请输入 API 地址 (例如: http://localhost:3000):', API_BASE);
+      if (apiInput) {
+        API_BASE = apiInput;
+        localStorage.setItem('marine_api_base', API_BASE);
+        checkAPI().then(() => loadData());
+      }
+    }
+
     // 初始加载
-    loadData();
+    checkAPI().then(() => loadData());
     // 每5秒刷新
     setInterval(loadData, 5000);
   </script>
