@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marine 机群运维中心</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background: #0d1117; color: #c9d1d9; }
+    .card { background: #161b22; border: 1px solid #30363d; }
+    .card-header { background: #21262d; border-bottom: 1px solid #30363d; }
+    .status-online { color: #3fb950; }
+    .status-offline { color: #f85149; }
+    .status-degraded { color: #d29922; }
+    .status-running { color: #58a6ff; }
+    .status-pending { color: #d29922; }
+    .status-completed { color: #3fb950; }
+    .status-failed { color: #f85149; }
+    .robot-name { font-weight: 600; color: #58a6ff; }
+    .task-source { font-size: 0.85em; color: #8b949e; }
+    .kpi-card { text-align: center; padding: 1.5rem; }
+    .kpi-value { font-size: 2.5rem; font-weight: 700; }
+    .kpi-label { font-size: 0.9rem; color: #8b949e; }
+    .table { color: #c9d1d9; }
+    .table-dark { --bs-table-bg: #161b22; }
+    .btn-primary { background: #238636; border-color: #238636; }
+    .btn-primary:hover { background: #2ea043; }
+    .badge-source { background: #30363d; font-size: 0.75em; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark border-bottom border-secondary">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1"><i class="bi bi-robot"></i> Marine 机群运维中心</span>
+      <span class="text-muted">v2.0 - 任务中心</span>
+    </div>
+  </nav>
+
+  <div class="container-fluid py-4">
+    <!-- KPI 卡片 -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card kpi-card">
+          <div class="kpi-value status-online" id="kpi-online">0</div>
+          <div class="kpi-label">在线机器人</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card">
+          <div class="kpi-value status-offline" id="kpi-offline">0</div>
+          <div class="kpi-label">离线机器人</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card">
+          <div class="kpi-value status-running" id="kpi-running">0</div>
+          <div class="kpi-label">进行中任务</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card">
+          <div class="kpi-value status-pending" id="kpi-pending">0</div>
+          <div class="kpi-label">待处理任务</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- 机器人列表 -->
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-people"></i> 机器人状态</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-dark table-hover mb-0" id="robot-table">
+                <thead>
+                  <tr>
+                    <th>机器人</th>
+                    <th>状态</th>
+                    <th>当前任务</th>
+                    <th>任务来源</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 任务中心 -->
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list-task"></i> 任务中心</h5>
+            <button class="btn btn-sm btn-primary" onclick="showCreateTask()">
+              <i class="bi bi-plus"></i> 创建任务
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-dark table-hover mb-0" id="task-table">
+                <thead>
+                  <tr>
+                    <th>任务</th>
+                    <th>来源</th>
+                    <th>状态</th>
+                    <th>执行机器人</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 待处理任务队列 -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-inbox"></i> 待处理任务队列 (任务中心)</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-dark" id="pending-table">
+                <thead>
+                  <tr>
+                    <th>优先级</th>
+                    <th>任务描述</th>
+                    <th>来源</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 创建任务模态框 -->
+  <div class="modal fade" id="createTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark">
+        <div class="modal-header">
+          <h5 class="modal-title">创建新任务</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">任务描述</label>
+            <input type="text" class="form-control" id="taskDesc" placeholder="例如：机器人管理网站搭建">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">来源类型</label>
+            <select class="form-select" id="taskSourceType">
+              <option value="feishu">飞书对话</option>
+              <option value="api">API 调用</option>
+              <option value="cron">定时任务</option>
+              <option value="system">系统自动</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">来源用户</label>
+            <input type="text" class="form-control" id="taskSourceUser" placeholder="顾源源">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">优先级</label>
+            <select class="form-select" id="taskPriority">
+              <option value="normal">普通</option>
+              <option value="high">高</option>
+              <option value="low">低</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="createTask()">创建</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_BASE = '';
+    let robotModal = null;
+
+    async function fetchJSON(url) {
+      const res = await fetch(url);
+      return res.json();
+    }
+
+    async function loadData() {
+      try {
+        // 加载统计数据
+        const summary = await fetchJSON(API_BASE + '/api/summary');
+        document.getElementById('kpi-online').textContent = summary.robots?.online || 0;
+        document.getElementById('kpi-offline').textContent = summary.robots?.offline || 0;
+        document.getElementById('kpi-running').textContent = summary.tasks?.running || 0;
+        document.getElementById('kpi-pending').textContent = summary.tasks?.pending || 0;
+
+        // 加载机器人列表
+        const robots = await fetchJSON(API_BASE + '/api/robots');
+        const robotTable = document.querySelector('#robot-table tbody');
+        robotTable.innerHTML = robots.robots?.map(r => `
+          <tr>
+            <td class="robot-name">${r.robot_id}</td>
+            <td><span class="status-${r.status?.toLowerCase()}">${r.status}</span></td>
+            <td>${r.current_task || '<span class="text-muted">-</span>'}</td>
+            <td class="task-source">${r.current_task_source || '<span class="text-muted">-</span>'}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4" class="text-muted text-center">暂无机器人</td></tr>';
+
+        // 加载任务列表
+        const tasks = await fetchJSON(API_BASE + '/api/tasks');
+        const taskTable = document.querySelector('#task-table tbody');
+        taskTable.innerHTML = tasks.tasks?.map(t => `
+          <tr>
+            <td>${t.description}</td>
+            <td><span class="badge badge-source">${t.source_text}</span></td>
+            <td><span class="status-${t.status}">${t.status}</span></td>
+            <td>${t.assigned_robot || '<span class="text-muted">-</span>'}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4" class="text-muted text-center">暂无任务</td></tr>';
+
+        // 加载待处理任务
+        const pending = await fetchJSON(API_BASE + '/api/tasks/pending');
+        const pendingTable = document.querySelector('#pending-table tbody');
+        pendingTable.innerHTML = pending.tasks?.map(t => `
+          <tr>
+            <td><span class="badge bg-${t.priority === 'high' ? 'danger' : t.priority === 'low' ? 'secondary' : 'warning'}">${t.priority === 'high' ? '高' : t.priority === 'low' ? '低' : '普通'}</span></td>
+            <td>${t.description}</td>
+            <td><span class="badge badge-source">${t.source_text}</span></td>
+            <td>${new Date(t.created_at).toLocaleString('zh-CN')}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" onclick="claimTask('${t.task_id}')">认领</button>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="5" class="text-muted text-center">暂无待处理任务</td></tr>';
+
+      } catch (e) {
+        console.error('加载数据失败:', e);
+      }
+    }
+
+    function showCreateTask() {
+      if (!robotModal) robotModal = new bootstrap.Modal(document.getElementById('createTaskModal'));
+      robotModal.show();
+    }
+
+    async function createTask() {
+      const desc = document.getElementById('taskDesc').value;
+      const sourceType = document.getElementById('taskSourceType').value;
+      const sourceUser = document.getElementById('taskSourceUser').value;
+      const priority = document.getElementById('taskPriority').value;
+
+      if (!desc) return alert('请输入任务描述');
+
+      await fetch(API_BASE + '/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: desc,
+          source_type: sourceType,
+          source_user: sourceUser || '未知用户',
+          source_channel: sourceType === 'feishu' ? '飞书对话' : 'API',
+          priority
+        })
+      });
+
+      robotModal.hide();
+      document.getElementById('taskDesc').value = '';
+      loadData();
+    }
+
+    async function claimTask(taskId) {
+      const robotId = prompt('请输入机器人 ID 认领任务:');
+      if (!robotId) return;
+
+      await fetch(API_BASE + '/api/tasks/' + taskId + '/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ robot_id: robotId })
+      });
+
+      loadData();
+    }
+
+    // 初始加载
+    loadData();
+    // 每5秒刷新
+    setInterval(loadData, 5000);
+  </script>
+</body>
+</html>
