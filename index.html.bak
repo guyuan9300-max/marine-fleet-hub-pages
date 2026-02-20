@@ -206,26 +206,24 @@
     // API 地址配置 - 可以通过页面上的设置按钮修改
     let API_BASE = localStorage.getItem('marine_api_base') || window.location.origin;
     // 默认使用演示数据（因为外网无法直接访问本地API）
-    let dataMode = localStorage.getItem("marine_data_mode") || "demo";
-    let JSON_DATA_URL = "data/robots.json";
+    let useDemoData = true;
     
     // 检查是否需要使用演示数据
     async function checkAPI() {
-      // 尝试 JSON 模式
       try {
         const res = await fetch(API_BASE + '/api/summary', { signal: AbortSignal.timeout(3000) });
         if (!res.ok) throw new Error('API not available');
-        dataMode = "api";
+        useDemoData = false;
         return true;
       } catch (e) {
         console.log('API 不可用，使用演示数据');
-        dataMode = "demo";
+        useDemoData = true;
         return false;
       }
     }
 
     async function fetchJSON(url) {
-      if (dataMode === "demo") return getDemoData(url);
+      if (useDemoData) return getDemoData(url);
       const res = await fetch(url);
       return res.json();
     }
